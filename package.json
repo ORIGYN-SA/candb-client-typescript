@@ -1,0 +1,46 @@
+{
+  "name": "candb-client",
+  "version": "1.0.0",
+  "description": "TypeScript client for CanDB",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "npx jest",
+    "check": "npx prettier --check '**/*.ts'",
+    "format": "prettier --write '**/*.ts'",
+    "lint": "npx eslint --cache --fix --ext .js,.ts src",
+    "build": "tsc -p tsconfig.json",
+    "example": "npx ts-node src/doIt.ts", 
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "CanDB"
+  ],
+  "author": "Byron Becker",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.1",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
+    "eslint": "^8.14.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "husky": "^7.0.4",
+    "jest": "^28.0.3",
+    "lint-staged": "^12.4.1",
+    "prettier": "^2.6.2",
+    "ts-node": "^10.7.0"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix",
+    "*.{ts,css,md}": "prettier --write"
+  },
+  "dependencies": {
+    "@dfinity/agent": "^0.11.1",
+    "@dfinity/auth-client": "^0.11.1",
+    "@dfinity/candid": "^0.11.1",
+    "@dfinity/principal": "^0.11.1",
+    "node-fetch": "^2.6.7"
+  }
+}
