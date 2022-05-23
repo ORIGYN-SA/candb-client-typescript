@@ -90,7 +90,7 @@ export class ActorClient<
     queryFn: (actor: ActorSubclass<ActorCanisterType>) => ReturnType<F>,
     reducer: (
       accumulator: U,
-      current: PromiseSettledResult<ReturnType<F>>
+      current: PromiseSettledResult<Awaited<ReturnType<F>>>
     ) => U,
     initialValue: U,
     useCache?: boolean
@@ -102,12 +102,10 @@ export class ActorClient<
   }
 
   // TODO: try to ensure here that the function passed here is an update function
+  // TODO: try to ensure that the value being updated is specific with respect to the SK
   async update<F extends (...args: any[]) => Promise<any>>(
     entity: Entity,
-    updateFn: (
-      actor: ActorSubclass<ActorCanisterType>,
-      entity: Entity
-    ) => ReturnType<F>
+    updateFn: (actor: ActorSubclass<ActorCanisterType>) => ReturnType<F>
   ) {
     const canisterIds = await this.indexClient.getCanistersForPK(entity.PK);
 
@@ -139,8 +137,8 @@ export class ActorClient<
           );
           return acc;
         }
-        if (settledResult.value === true) return acc;
-        return acc.concat(canisterId);
+        if (settledResult.value === true) return acc.concat(canisterId);
+        return acc;
       },
       [] as string[]
     );
@@ -156,16 +154,19 @@ export class ActorClient<
       throw new Error(errors.toString());
     }
 
-    // pk sk combination not found, insert into most recent canister
+    // the canister that the update call will be made to
     const canisterToMakeUpdateCallTo =
       matchingSK.length === 0
-        ? canisterIds[canisterIds.length - 1]
-        : matchingSK[0][0]; // the first (and only) matching canisterId
+        ? // no matching sks meaning that the pk + sk was combination not found, so insert into most recent canister
+          canisterIds[canisterIds.length - 1]
+        : // otherwise insert into the first (and only) matching canisterId
+          matchingSK[0];
+
     const updateCanisterActor = createActor<ActorCanisterType>({
       ...this.actorOptions,
       canisterId: canisterToMakeUpdateCallTo,
     });
 
-    return updateFn(updateCanisterActor, entity);
+    return updateFn(updateCanisterActor);
   }
 }

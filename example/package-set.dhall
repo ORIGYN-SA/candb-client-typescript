@@ -4,7 +4,12 @@ let upstream =
 let packages = [
   { name = "stable-rbtree"
   , repo = "https://github.com/canscale/StableRBTree"
-  , version = "v0.3.0"
+  , version = "v0.5.0"
+  , dependencies = [ "base" ]
+  },
+  { name = "stable-buffer"
+  , repo = "https://github.com/canscale/StableBuffer"
+  , version = "v0.2.0"
   , dependencies = [ "base" ]
   },
   { name = "array"

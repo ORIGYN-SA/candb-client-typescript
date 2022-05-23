@@ -36,13 +36,13 @@ module {
     canister_status : shared { canister_id : Principal } -> async {
         status : { #running; #stopping; #stopped };
         settings: DefiniteCanisterSettings;
-        module_hash: ?[Nat8];
+        module_hash: ?Blob;
         memory_size: Nat;
         cycles: Nat;
     };
     delete_canister : { canister_id : Principal } -> async ();
     deposit_cycles : { canister_id : Principal } -> async ();
-    raw_rand : () -> async [Nat8];
+    raw_rand : () -> async Blob;
 
     // provisional interfaces for the pre-ledger world
     provisional_create_canister_with_cycles : shared {

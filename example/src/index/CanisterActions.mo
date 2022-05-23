@@ -1,6 +1,7 @@
 import InterfaceSpec "./InterfaceSpec";
 import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
+import Nat "mo:base/Nat";
 
 module {
   let ic: InterfaceSpec.IC = actor "aaaaa-aa";
@@ -24,22 +25,25 @@ module {
     });
   };
 
-  public func stopCanister(canisterId: Principal): async () {
+  public func stopCanister(canisterId: Principal): async Text {
     await ic.stop_canister({ canister_id = canisterId });
+    "done";
   };
 
-  public func deleteCanister(canisterId: Principal): async () {
+  public func deleteCanister(canisterId: Principal): async Text {
     await ic.delete_canister({ canister_id = canisterId });
+    "done";
   };
 
   public func depositCycles(canisterId: Principal): async () {
     await ic.deposit_cycles({ canister_id = canisterId });
   };
 
-  public func transferCycles(transferTo: Principal): async() {
+  public func transferCycles(transferTo: Principal): async Text {
     let balance: Nat = Cycles.balance() - 100_000_000_000;
-    Debug.print("added balance = " # debug_show(balance));
+    Debug.print("balance to transfer =" # Nat.toText(balance));
     Cycles.add(balance);
     await ic.deposit_cycles({ canister_id = transferTo });
-  }
+    "done";
+  };
 }

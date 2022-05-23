@@ -8,13 +8,24 @@ shared ({ caller = owner }) actor class UserCanister(primaryKey: Text) {
   // stable let owners = owners; // TODO: put this back in once can blob encode records
   stable let pk = primaryKey;
 
+  stable var count = 0;
+
   public query func getPK(): async Text { pk };
 
-  public query func skExists(): async Bool { false };
+  public query func skExists(sk: Text): async Bool { false };
 
-  public shared({ caller = caller }) func transferCycles(): async () {
+  public shared({ caller = caller }) func transferCycles(): async Text {
     if (caller == owner) {
-      await CA.transferCycles(caller);
-    }
-  }
+      return await CA.transferCycles(caller);
+    };
+
+    "not owner"
+  };
+
+  public query func getCount(): async Nat { count };
+
+  public func incrementByNat(i: Nat): async Nat {
+    count += i;
+    count;
+  }; 
 }
