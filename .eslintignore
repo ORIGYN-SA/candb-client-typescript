@@ -1,2 +1,4 @@
 **/declarations/*
 **/*.did.d.ts
+
+src/management_idl.ts

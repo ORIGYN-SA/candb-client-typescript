@@ -5,10 +5,17 @@ import {
   AnonymousIdentity,
   HttpAgent,
   HttpAgentOptions,
+  Identity,
 } from "@dfinity/agent";
 import { InterfaceFactory } from "@dfinity/candid/lib/cjs/idl";
 import fetch from "node-fetch";
 
+/**
+ * Gets the appropriate fetch for the given environment (i.e. browser, node)
+ *
+ * @ignore
+ * @returns fetch
+ */
 function getDefaultFetch() {
   if (typeof window !== "undefined") {
     // Browser context
@@ -35,10 +42,18 @@ function getDefaultFetch() {
   );
 }
 
+export interface HttpAgentOptionsSyncIdentity extends HttpAgentOptions {
+  identity?: Identity;
+}
+
+export interface HttpAgentOptionsWithIdentity extends HttpAgentOptions {
+  identity: Identity;
+}
+
 export interface CreateActorOptions {
   IDL: InterfaceFactory;
   canisterId: string;
-  agentOptions: HttpAgentOptions;
+  agentOptions: HttpAgentOptionsSyncIdentity;
   actorConfig?: ActorConfig;
 }
 
@@ -50,8 +65,8 @@ export function createActor<T>({
 }: CreateActorOptions): ActorSubclass<T> {
   const agent = new HttpAgent({
     fetch: getDefaultFetch(),
-    identity: agentOptions.identity || new AnonymousIdentity(),
     ...agentOptions,
+    identity: agentOptions.identity || new AnonymousIdentity(),
   });
 
   if (process.env.NODE_ENV !== "production") {

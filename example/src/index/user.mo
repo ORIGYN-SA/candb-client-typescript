@@ -1,25 +1,36 @@
 import Cycles "mo:base/ExperimentalCycles";
-import CA "./CanisterActions";
 import Debug "mo:base/Debug";
-import InterfaceSpec "./InterfaceSpec";
 
-shared ({ caller = owner }) actor class UserCanister(primaryKey: Text) {
+import CA "mo:candb/CanisterActions";
+import CanDB "mo:candb/CanDB";
+import E "mo:candb/Entity";
+
+import Iter "mo:base/Iter";
+import Principal "mo:base/Principal";
+
+shared ({ caller = owner }) actor class UserCanister({
+  primaryKey: Text;
+  scalingOptions: CanDB.ScalingOptions;
+}) = this {
+
   // Initialize CanDB
-  // stable let owners = owners; // TODO: put this back in once can blob encode records
-  stable let pk = primaryKey;
+  stable let db = CanDB.init({
+    pk = primaryKey;
+    scalingOptions = scalingOptions;
+  });
 
   stable var count = 0;
 
-  public query func getPK(): async Text { pk };
+  public query func getPK(): async Text { db.pk };
 
-  public query func skExists(sk: Text): async Bool { false };
+  public query func skExists(sk: Text): async Bool { 
+    CanDB.skExists(db, sk);
+  };
 
-  public shared({ caller = caller }) func transferCycles(): async Text {
+  public shared({ caller = caller }) func transferCycles(): async () {
     if (caller == owner) {
-      return await CA.transferCycles(caller);
+      await CA.transferCycles(caller);
     };
-
-    "not owner"
   };
 
   public query func getCount(): async Nat { count };
@@ -28,4 +39,31 @@ shared ({ caller = owner }) actor class UserCanister(primaryKey: Text) {
     count += i;
     count;
   }; 
+
+  public func addEntity(sk: Text): async Text {
+    let ov = await CanDB.replace(db, {
+      sk = sk;
+      attributes = [
+      ("name", #text("joe")),
+      ("age", #int(24)),
+      ("isMember", #bool(true)),
+      ];
+    });
+
+    "pk=" # db.pk # ", sk=" # sk;
+  };
+
+  public func getEntities(): async CanDB.ScanResult {
+    CanDB.scan(db, {
+      skLowerBound = "item#";
+      skUpperBound = "item#:";
+      limit = 100000;
+      ascending = null;
+    });
+  };
+
+  public func test(): async Text {
+    Debug.print("called test for canister=" # debug_show(Principal.toText(Principal.fromActor(this))));
+    "test" # primaryKey # ", limit = " # debug_show(scalingOptions.limit) # ".";
+  };
 }

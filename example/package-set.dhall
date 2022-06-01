@@ -4,7 +4,7 @@ let upstream =
 let packages = [
   { name = "stable-rbtree"
   , repo = "https://github.com/canscale/StableRBTree"
-  , version = "v0.5.0"
+  , version = "v0.6.0"
   , dependencies = [ "base" ]
   },
   { name = "stable-buffer"
@@ -12,31 +12,11 @@ let packages = [
   , version = "v0.2.0"
   , dependencies = [ "base" ]
   },
-  { name = "array"
-  , repo = "https://github.com/aviate-labs/array.mo"
-  , version = "v0.2.0"
-  , dependencies = [ "base" ]
+  { name = "candb"
+  , repo = "https://github.com/canscale/candb"
+  , version = "auto-scaling-poc"
+  , dependencies = [ "base", "stable-rbtree", "stable-buffer" ]
   },
-  { name = "io"
-  , repo = "https://github.com/aviate-labs/io.mo"
-  , version = "v0.3.1"
-  , dependencies = [ "base" ]
-  },
-  { name = "encoding"
-  , repo = "https://github.com/aviate-labs/encoding.mo"
-  , version = "v0.3.2"
-  , dependencies = [ "array", "base" ]
-  },
-  { name = "rand"
-  , repo = "https://github.com/aviate-labs/rand.mo"
-  , version = "v0.2.2"
-  , dependencies = [ "base", "encoding", "io" ]
-  },
-  { name = "ulid"
-  , repo = "https://github.com/byronbecker/ulid.mo"
-  , version = "v0.1.2"
-  , dependencies = [ "base", "encoding", "io" ]
-  }
 ]
 
 in  upstream # packages
