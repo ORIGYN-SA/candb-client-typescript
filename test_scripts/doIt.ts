@@ -1,22 +1,22 @@
 import { ActorSubclass } from "@dfinity/agent";
 import { homedir } from "os";
-import { IndexClient } from "./IndexClient";
+import { IndexClient } from "../src/IndexClient";
 
 import { IndexCanister } from "../example/src/declarations/index/index.did";
-import { idlFactory as IndexCanisterIDL } from "../example/src/declarations/index";
+import { idlFactory as IndexCanisterIDL } from "../example/src/declarations/index/index";
 import {
   ScanResult,
   UserCanister,
 } from "../example/src/declarations/user/user.did";
 import { idlFactory as UserCanisterIDL } from "../example/src/declarations/user";
-import { ActorClient } from "./ActorClient";
-import { identityFromSeed, loadWasm } from "./ClientUtil";
+import { ActorClient } from "../src/ActorClient";
+import { identityFromSeed, loadWasm } from "../src/ClientUtil";
 
 async function go() {
   const host = "http://127.0.0.1:8000";
   const client = new IndexClient<IndexCanister>({
     IDL: IndexCanisterIDL,
-    canisterId: "obvea-mqaaa-aaaaa-aafva-cai",
+    canisterId: "2fiah-qiaaa-aaaaa-aagdq-cai",
     agentOptions: {
       host,
       identity: await identityFromSeed(
