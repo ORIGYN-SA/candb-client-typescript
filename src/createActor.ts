@@ -20,7 +20,8 @@ function getDefaultFetch() {
   if (typeof window !== "undefined") {
     // Browser context
     if (window.fetch) {
-      return window.fetch;
+      const defaultFetch = window.fetch.bind(window);
+      return defaultFetch;
     }
     throw new Error(
       "Fetch implementation was not available. You appear to be in a browser context, but window.fetch was not present."
