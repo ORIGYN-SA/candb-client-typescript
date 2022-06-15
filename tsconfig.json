@@ -14,6 +14,7 @@
   },
   "include": [
     "src/**/*",
-    "src/declarations/**/*"
+    "src/declarations/**/*",
+    "test_scripts/*.ts",
   ]
 }

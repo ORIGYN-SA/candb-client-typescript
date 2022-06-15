@@ -113,7 +113,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     }
   };
 
-  public shared({ caller = caller }) func upgradeUserCanisters(wasmModule: Blob): async [(Text, Admin.InterCanisterActionResult)] {
+  public shared({ caller = caller }) func upgradeUserCanisters(wasmModule: Blob): async Admin.UpgradePKRangeResult {
     await Admin.upgradeCanistersInPKRange(
       pkToCanisterMap,
       "user#", 
