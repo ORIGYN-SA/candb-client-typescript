@@ -1,6 +1,6 @@
 {
   "name": "candb-client-typescript",
-  "version": "1.0.0",
+  "version": "0.0.0-alpha.0",
   "description": "TypeScript client for CanDB",
   "main": "dist/index.js",
   "scripts": {
@@ -9,12 +9,16 @@
     "format": "prettier --write '**/*.ts'",
     "lint": "npx eslint --cache --fix --ext .js,.ts src",
     "docs": "npx typedoc --out docs src/*",
-    "build": "tsc -p tsconfig.json",
+    "build": "rm -rf dist && tsc -p tsconfig.publish.json",
     "example": "npx ts-node src/doIt.ts",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "pre-publish": "npm pack"
   },
   "keywords": [
     "CanDB"
+  ],
+  "files": [
+    "dist/**/*"
   ],
   "author": "Byron Becker",
   "devDependencies": {

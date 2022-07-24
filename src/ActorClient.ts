@@ -154,6 +154,39 @@ export class ActorClient<
     return Promise.allSettled(actors.map((a) => queryFn(a)));
   }
 
+  /**
+   * Note: may remove this function depending on utilization - (originally wrote this to retrieve canister specific metrics for the hackathon demo)
+   *
+   * Similar to query, but returns a mapping of canisterId to the query result returned by that canister.
+   *
+   * Important if want canister level information for a pk and don't want to go through the indexing canister. This
+   * is because going through the indexing canister would slow it down massively in a large multi-canister application
+   *
+   * @type @param F - Type parameter with the IDL actor type and function
+   *   For example, userActorClient.request<UserCanister["getPK"]>, where F is UserCanister["getPK"]
+   *
+   * @param PK - Partition Key
+   * @param queryFn - the query function that will be executed on the canister. Takes in an actor and
+   *   returns the ReturnType of F
+   * @param useCache - whether the index canister needs to be hit again to fetch relevant PK canisters,
+   *   or if the request can use the PK to canister cache list to query directly without needing to do so
+   *
+   * @returns - a promise settled result mapping of canisterId to the result of the query (TypeDoc fail - see source code for return type)
+   */
+  async queryWithCanisterIdMapping<F extends (...args: any[]) => ReturnType<F>>(
+    PK: PartitionKey,
+    queryFn: (actor: ActorSubclass<ActorCanisterType>) => ReturnType<F>,
+    useCache?: boolean
+  ): Promise<
+    PromiseSettledResult<Awaited<{ [canisterId: string]: ReturnType<F> }>>[]
+  > {
+    const canisterIds = await this.indexClient.getCanistersForPK(PK, useCache);
+    const actors = this.createActorsFromCanisters(canisterIds);
+    return Promise.allSettled(
+      actors.map((a, i) => ({ [canisterIds[i]]: queryFn(a) }))
+    );
+  }
+
   // TODO: ensure that the function passed here is a query function
   /// Use to call a query function on all canisters with a specific PK
   /**
@@ -231,22 +264,16 @@ export class ActorClient<
    *
    * @example
    * ```typescript
-   * // An example making an update call to an incrementByNat endpoint that updates a counter on the backend
+   * // An example making an update call to an updateUserAttributes endpoint that updates a specific user's attributes
    *
-   * const incrementFunction =
-   *   (i: bigint) =>
-   *   async (userActor: ActorSubclass<UserCanister>): Promise<bigint> =>
-   *     userActor.incrementByNat(i);
    *
-   * const incrementBy5 = incrementFunction(BigInt(5));
-   *
-   * let incrementResult = await userActorClient.update<UserCanister["incrementByNat"]>(
+   * let updateUserAttributesResult = await userActorClient.update<UserCanister["updateUserAttributes"]>(
    *   <insert PK>,
    *   <insert SK>,
-   *   incrementBy5
+   *   (actor) => actor.updateUserAttributes(attributes)
    * );
    *
-   * console.log("increment result", incrementResult);
+   * console.log("result", updateUserAttributesResult);
    * ```
    *
    * @type @param F - Type parameter with the IDL actor type and function
@@ -261,7 +288,7 @@ export class ActorClient<
     pk: PartitionKey,
     sk: SortKey,
     updateFn: (actor: ActorSubclass<ActorCanisterType>) => ReturnType<F>
-  ) {
+  ): Promise<ReturnType<F>> {
     const canisterIds = await this.indexClient.getCanistersForPK(pk, false);
 
     // Can fail here if the incorrect primary key is used or if the index canister does not permit access to the PK for the calling principal
