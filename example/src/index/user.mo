@@ -9,13 +9,13 @@ import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 
 shared ({ caller = owner }) actor class UserCanister({
-  primaryKey: Text;
+  partitionKey: Text;
   scalingOptions: CanDB.ScalingOptions;
 }) = this {
 
   // Initialize CanDB
   stable let db = CanDB.init({
-    pk = primaryKey;
+    pk = partitionKey;
     scalingOptions = scalingOptions;
   });
 
@@ -64,6 +64,6 @@ shared ({ caller = owner }) actor class UserCanister({
 
   public func test(): async Text {
     Debug.print("called test for canister=" # debug_show(Principal.toText(Principal.fromActor(this))));
-    "test" # primaryKey # ", limit = " # debug_show(scalingOptions.limit) # ".";
+    "test" # partitionKey # ", limit = " # debug_show(scalingOptions.limit) # ".";
   };
 }
