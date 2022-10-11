@@ -1,16 +1,15 @@
 {
   "name": "candb-client-typescript",
-  "version": "0.0.0-alpha.0",
+  "version": "0.0.0-alpha.1",
   "description": "TypeScript client for CanDB",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npx jest",
     "check": "npx prettier --check '**/*.ts'",
     "format": "prettier --write '**/*.ts'",
     "lint": "npx eslint --cache --fix --ext .js,.ts src",
     "docs": "npx typedoc --out docs src/*",
     "build": "rm -rf dist && tsc -p tsconfig.publish.json",
-    "example": "npx ts-node src/doIt.ts",
+    "example": "npx ts-node test_scripts/doIt.ts",
     "prepare": "husky install",
     "pre-publish": "npm pack"
   },
@@ -31,7 +30,6 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "husky": "^7.0.4",
-    "jest": "^28.0.3",
     "lint-staged": "^12.4.1",
     "prettier": "^2.6.2",
     "ts-node": "^10.7.0",
@@ -50,6 +48,7 @@
     "bip39": "^3.0.4",
     "fs": "^0.0.1-security",
     "hdkey": "^2.0.1",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "pem-file": "^1.0.1"
   }
 }

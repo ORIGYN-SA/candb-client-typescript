@@ -1,8 +1,9 @@
 import { readFileSync } from "fs";
-import { Secp256k1KeyIdentity } from "@dfinity/identity";
+import { Ed25519KeyIdentity, Secp256k1KeyIdentity } from "@dfinity/identity";
 
 const hdkey = require("hdkey");
 const bip39 = require("bip39");
+const pemfile = require("pem-file");
 
 /**
  * Returns an identity in JavaScript that matches a dfx identity. This identity is produced from a quill generated seed phrase
@@ -43,6 +44,24 @@ export async function identityFromSeed(
   const addrnode = root.derive("m/44'/223'/0'/0/0");
 
   return Secp256k1KeyIdentity.fromSecretKey(addrnode.privateKey);
+}
+
+/**
+ * Imports a dfx generated pem file as an identity
+ *
+ * @param pemFilePath path to the identiy.pem file
+ * @returns {Ed25519KeyIdentity} return the identity of the pem file
+ *
+ * credit to @ZenVoich's solution here -> https://forum.dfinity.org/t/using-dfinity-agent-in-node-js/6169/55
+ */
+export function identityFromPemFile(pemFilePath: string): Ed25519KeyIdentity {
+  const rawKey = readFileSync(pemFilePath).toString();
+  const buf = pemfile.decode(rawKey);
+  if (buf.length !== 85) {
+    throw new Error(`expecting byte length 85 but got ${  buf.length}`);
+  }
+  const secretKey = Buffer.concat([buf.slice(16, 48), buf.slice(53, 85)]);
+  return Ed25519KeyIdentity.fromSecretKey(secretKey);
 }
 
 /**

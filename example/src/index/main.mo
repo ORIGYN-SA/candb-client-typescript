@@ -1,14 +1,16 @@
-import Principal "mo:base/Principal";
-import Debug "mo:base/Debug";
 import Cycles "mo:base/ExperimentalCycles";
+import Debug "mo:base/Debug";
+import Error "mo:base/Error";
+import Principal "mo:base/Principal";
 import Text "mo:base/Text";
-import Buffer "mo:stable-buffer/StableBuffer";
 
 import UserCanister "./user";
 
+import Buffer "mo:stable-buffer/StableBuffer";
 import CanisterMap "mo:candb/CanisterMap";
 import CA "mo:candb/CanisterActions";
 import Admin "mo:candb/CanDBAdmin";
+import Utils "mo:candb/Utils";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
   stable var pkToCanisterMap = CanisterMap.init();
@@ -23,10 +25,10 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     let newUserCanister = await UserCanister.UserCanister({
       partitionKey = pk;
       scalingOptions = {
-        autoScalingCanisterId = Principal.toText(Principal.fromActor(this));
-        limitType = #count;
-        limit = 3;
-      }
+        autoScalingHook = autoScaleUserServiceCanister;
+        sizeLimit = #count(3);
+      };
+      owners = ?[owner, Principal.fromActor(this)];
     });
     let newUserCanisterPrincipal = Principal.fromActor(newUserCanister);
     await CA.updateCanisterSettings({
@@ -60,16 +62,12 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     }
   }; 
 
-  public shared({caller = caller}) func createAdditionalCanisterForPK(pk: Text): async Text {
-    Debug.print("creating additional canister for PK=" # pk);
-    if (not callingCanisterOwnsPK(caller, pk)) {
-      Debug.trap("error, called by non-controller=" # debug_show(caller));
-    };
-    
-    if (Text.startsWith(pk, #text("user#"))) {
-      await createUserCanister(pk, ?[owner, Principal.fromActor(this)]);
+  public shared({caller = caller}) func autoScaleUserServiceCanister(pk: Text): async Text {
+    if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
+      Debug.print("creating an additional canister for pk=" # pk);
+      await createUserCanister(pk, ?[owner, Principal.fromActor(this)])
     } else {
-      Debug.trap("error: create case not covered");
+      throw Error.reject("not authorized");
     };
   };
 
@@ -114,17 +112,17 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   };
 
   public shared({ caller = caller }) func upgradeUserCanisters(wasmModule: Blob): async Admin.UpgradePKRangeResult {
-    await Admin.upgradeCanistersInPKRange(
-      pkToCanisterMap,
-      "user#", 
-      "user#:", 
-      5,
-      wasmModule,
-      {
-        autoScalingCanisterId = Principal.toText(Principal.fromActor(this));
-        limit = 20;
-        limitType = #count;
-      }
-    );
+    await Admin.upgradeCanistersInPKRange({
+      canisterMap = pkToCanisterMap;
+      lowerPK = "user#"; 
+      upperPK = "user#:"; 
+      limit = 5;
+      wasmModule = wasmModule;
+      scalingOptions = {
+        autoScalingHook = autoScaleUserServiceCanister;
+        sizeLimit = #count(20);
+      };
+      owners = ?[owner, (Principal.fromActor(this))];
+    });
   };
 }

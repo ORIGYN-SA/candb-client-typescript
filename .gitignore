@@ -4,4 +4,11 @@ src/declarations/*
 .eslintcache
 **/.dfx/*
 **/.vessel/*
+dist
+docs
+.DS_Store
+tsconfig.publish.json
+candb-client-typescript-*.tgz
+.npmignore
+package/*
 

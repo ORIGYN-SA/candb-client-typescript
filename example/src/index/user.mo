@@ -11,6 +11,7 @@ import Principal "mo:base/Principal";
 shared ({ caller = owner }) actor class UserCanister({
   partitionKey: Text;
   scalingOptions: CanDB.ScalingOptions;
+  owners: ?[Principal];
 }) = this {
 
   // Initialize CanDB
@@ -64,6 +65,6 @@ shared ({ caller = owner }) actor class UserCanister({
 
   public func test(): async Text {
     Debug.print("called test for canister=" # debug_show(Principal.toText(Principal.fromActor(this))));
-    "test" # partitionKey # ", limit = " # debug_show(scalingOptions.limit) # ".";
+    "test" # partitionKey # ", limit = " # debug_show(scalingOptions.sizeLimit) # ".";
   };
 }
