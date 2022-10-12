@@ -50,15 +50,22 @@ export async function identityFromSeed(
  * Imports a dfx generated pem file as an identity
  *
  * @param pemFilePath path to the identiy.pem file
- * @returns {Ed25519KeyIdentity} return the identity of the pem file
+ * @returns {Ed25519KeyIdentity} Returns the identity of the pem file
  *
- * credit to @ZenVoich's solution here -> https://forum.dfinity.org/t/using-dfinity-agent-in-node-js/6169/55
+ * @example
+ * ```typescript
+ * import { homedir } from 'os';
+ *
+ * let identity = await identityFromPemFile(`${homedir}/.config/dfx/identity/local-testing/identity.pem`);
+ * ```
+ *
+ * code credit to @ZenVoich's solution here -> https://forum.dfinity.org/t/using-dfinity-agent-in-node-js/6169/55
  */
 export function identityFromPemFile(pemFilePath: string): Ed25519KeyIdentity {
   const rawKey = readFileSync(pemFilePath).toString();
   const buf = pemfile.decode(rawKey);
   if (buf.length !== 85) {
-    throw new Error(`expecting byte length 85 but got ${  buf.length}`);
+    throw new Error(`expecting byte length 85 but got ${buf.length}`);
   }
   const secretKey = Buffer.concat([buf.slice(16, 48), buf.slice(53, 85)]);
   return Ed25519KeyIdentity.fromSecretKey(secretKey);
